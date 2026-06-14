@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+.venv/
+
+# PyCharm
+.idea/
+
+# Environment variables
+.env
+
+.DS_Store
+
+# Data
+Data/
+
+# Reconstruction outputs
+Recon_Results/

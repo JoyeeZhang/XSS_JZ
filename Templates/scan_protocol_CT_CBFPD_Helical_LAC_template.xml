@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<XSS>
+  <!--========================================================================
+	General Info
+	...........................................................................
+	device_name: [CT,RT, etc]
+	========================================================================-->
+  <device_name>CT</device_name> 
+  <xml_version>0.0.1</xml_version>
+  <raw_data_folder>C:\Workstation\Packages\XSS\XSSPackage\Data\CTCBFPDHelicalExample\</raw_data_folder>  
+	<!--========================================================================
+	Phantom
+	..........................................................................
+	Phantom type [analytical, digital]
+	========================================================================-->
+  <phantom>
+	<phantom_type>ANALYTICAL</phantom_type>
+	<phantom_name>Tire3D_H44-5X16-5R21_LAC</phantom_name>
+  </phantom>  
+  <!--========================================================================
+	geomettry
+	..........................................................................
+	coordinate_system [CT, RT] - all follow right hand rule(RHR)
+		viewing from the front of the gantry
+		CT:diagnostic
+			x: horizontal, pointing to the right 
+			y: vertical, pointing to the ground
+			z: rotation axis pointing into the gantry
+		RT:treatment
+			x: horizontal, pointing to the right
+			y: rotation axis pointing into the gantry
+			z: vertical, pointing to the ceiling
+	trajectory type: [HELICAL, DYNAMIC]
+		HELICAL
+		DYNAMIC
+	geometry type: [CBFPD, CBCurved, PB]
+		CBFPD:  cone beam geometry with a flat panel detector
+				it degenerates to FBFPD when row num becomes 1
+		CBCurved: cone beam geo with a curved detector
+				it degenerates to FBCurved when row num becomes 1
+	focal spot model: [POINT,MAP]
+		POINT: point source
+		MAP: measured focal spot map
+	detector pixel model: [POINT, MULTIRAY]
+		MULTIRAY: point source, square det pixel
+			in case of nu>1&nv>1, proj is avg of rays of 4 corners
+			in case of nu=1|nv=1, proj is avg of rays of 2 edges
+	Detector layout: [U1V1,U1V0,U0V1,U0V0,V1U1,V1U0,V0U1,V0U0]
+		U1V1 [REFERENCE]: 
+			For dianostic, when source is on the x axis
+				detector u axis is along y axis
+				detector v axis is along z axis
+			For treatment, when source is on the z axis
+				detector u axis is along x axis
+				detector v axis is along y axis	
+	========================================================================-->  
+  <scan_geometry>
+    <coordinate_system_type>CT</coordinate_system_type>
+	<trajectory_type>HELICAL</trajectory_type>
+	<geometry_type>CBFPD</geometry_type>
+	<focal_spot_model>POINT</focal_spot_model>
+	<detector_pixel_model>POINT</detector_pixel_model>
+	<gantry_tilt_angle_deg>0</gantry_tilt_angle_deg>
+	<source_starting_angle_deg>0</source_starting_angle_deg>
+	<source_starting_position_mm>0</source_starting_position_mm>
+	<source_rotation_direction>RHR</source_rotation_direction>
+	<total_number_of_projections>360</total_number_of_projections>
+	<views_per_rotation>360</views_per_rotation>
+	<source_translation_per_rotation_mm>0</source_translation_per_rotation_mm>
+	<source_to_isocenter_distance_mm>2000</source_to_isocenter_distance_mm>
+	<source_to_piercing_point_distance_mm>3000</source_to_piercing_point_distance_mm>
+	<detector_layout>U1V1</detector_layout>
+	<detector_channel_space_mm>0.4</detector_channel_space_mm>
+	<detector_channel_number>6065</detector_channel_number>
+	<detector_channel_offset>3032</detector_channel_offset>
+	<detector_row_space_mm>0.4</detector_row_space_mm>
+	<detector_row_number>3</detector_row_number>
+	<detector_row_offset>1</detector_row_offset>
+	<detector_rotation_around_waxis_deg>0</detector_rotation_around_waxis_deg>
+	<detector_rotation_around_vaxis_deg>0</detector_rotation_around_vaxis_deg>
+	<detector_rotation_around_uaxis_deg>0</detector_rotation_around_uaxis_deg>
+	<detector_rotation_deployment_order>wvu</detector_rotation_deployment_order>
+  </scan_geometry>
+  <!--========================================================================
+	Imaging Chain
+	..........................................................................
+	imaging chain type: [LAC,SPECTRAL]
+		LAC: phantom defined by LAC
+		SPECTRAL: phantom defined by material and energy grids
+	projection type: [line_integral, attenuation, counts]
+		line_Integral: post-log, typical value (0, 10)
+		attenuation: pre-log, typical value (0,1]
+		counts: detector output, could be, e.g., photon counts or ADU
+	projection data type
+		  UINT16 = np.uint16
+		  INT16 = np.int16
+		  UINT32 = np.uint32
+		  INT32 = np.int32
+		  FLOAT32 = np.float32
+		  FLOAT64 = np.float64
+	Noise is added post-scan, as it is fast and flexible
+	Electronic noise std:
+		model: gauss
+		std: standard deviation, 0 to turn off
+	Poisson noise: [False, True]
+	mono-energy and photon counts per ray are used for noise modelling	
+	========================================================================-->
+  <imaging_chain>
+	<imaging_chain_type>LAC</imaging_chain_type>
+	<forward_projection_method>ANALYTICAL</forward_projection_method>
+	<projection_type>LINE_INTEGRAL</projection_type>
+	<projection_data_type>FLOAT32</projection_data_type>
+	<energy_kev>60</energy_kev>
+	<photon_counts_per_ray>1e6</photon_counts_per_ray>	
+	<electronic_noise_std>0</electronic_noise_std>
+	<poisson_noise>False</poisson_noise>
+  </imaging_chain>
+</XSS>
