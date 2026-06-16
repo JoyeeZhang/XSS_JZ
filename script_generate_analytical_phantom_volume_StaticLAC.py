@@ -24,6 +24,7 @@ scale= 0.2
 xFOV = 256.0/scale
 zFOV = 256.0/scale
 
+# Volume for entire tire
 if volume_option == 'Full':
     ncol = 1024
     nrow = 1024
@@ -43,6 +44,7 @@ if volume_option == 'Full':
         fn = './Data/' + phantom_name + '_Full_' + str(ncol) + 'x' + str(nrow) + 'x' + str(nslice) +'.img'
         vol.write_header(fn)
         vol.write_volume(fn)
+# Volume for tire tube
 elif volume_option == 'Partial':
     ncol = 3072
     nrow = 1
