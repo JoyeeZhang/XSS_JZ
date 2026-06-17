@@ -73,8 +73,8 @@ header = fio.create_header_dict_projection_basic(nlambda,nv,nu,
 # Joseph - nups 1
 #=========================================================================
 nups = 1
-print('Generating fanogram using average of upsampling rate:'+str(nups)+'...')
-fnProjection = fn_phantom + 'I'+str(nx)+'_beamavg'+str(nups)+'x1'+'_' + str(nu) + 'x' + str(nv) + 'x' + str(nlambda) + '_Joseph.prj'
+print('Generating fanogram using average of upsampling rate:' + str(nups) + '...')
+fnProjection = fn_phantom + 'I' + str(nx) + '_beamavg' + str(nups) + 'x1'+'_' + str(nu) + 'x' + str(nv) + 'x' + str(nlambda) + '_Joseph.prj'
 fnProjection = os.path.join(fld_recon, fnProjection)
 fio.write_header(fnProjection,header)
 
@@ -85,7 +85,7 @@ fig1 = plt.figure()
 ax1 = fig1.add_subplot()
 ax1.imshow(gJ1, cmap='gray')
 ax1.axis('off')
-plt.pause(0.01)
+plt.pause(1.0)
 
 #=========================================================================
 # Joseph - nups 3

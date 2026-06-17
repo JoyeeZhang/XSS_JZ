@@ -395,7 +395,7 @@ def perform_FP_FB_Curve_Joseph(slice:img.Slice2D,lambdas,dlambda,nlambda,gammas,
 [N] - Perform forward projection for fan-beam geometry (flat geo) with Joseph's method
 [H] - 20250425 created by ZYu
 ------------------------------------------------------------------------'''    
-def perform_FP_FB_Flat_Joseph(slice:img.Slice2D,lambdas,dlambda,nlambda,uoff, du, nu,R,D,nups_beam_avg=1):
+def perform_FP_FB_Flat_Joseph(slice:img.Slice2D, lambdas, dlambda, nlambda, uoff, du, nu, R, D, nups_beam_avg=1):
     nu_original = nu
     
     nu = nups_beam_avg*nu
