@@ -832,25 +832,48 @@ class CBCurveD(Basis3D):
         return valpha
 
     '''------------------------------------------------------------------------
-    [F] - return_distance_vector_origin(self)
+    [F] - test_curveD_geometry(self)
     [O] - valpha: 3xnuv matrix w/ each col being a unit vector for a det pix
     [N] - valpha = (u*veu + v*vev - D*vew) / sqrt(u*u + v*v + D*D)
     [H] - Created by JZhang prior to 20250927
     ------------------------------------------------------------------------'''
 
-    def return_distance_vector_origin(self):
-        nv = self.nrow
-        voff = self.orow
-        nu = self.nchannel
+    def test_curveD_geometry(self, rtol=1e-10, atol=1e-10):
         valpha = self.generate_divergent_cone_beam_unit_vector()
-        vsource_array = np.vstack([self.vsource]*valpha.shape[1]).T
-        v_dis = - vsource_array + np.sum(vsource_array*valpha, axis=0) * valpha
-        v_dis[2, :] = 0.0
-        dis = np.linalg.norm(v_dis[:2, :], axis=0)
-        dis = dis.reshape(nv, nu)
-        dis = dis[int(voff), :]
 
-        return dis
+        nu = self.nchannel
+        nv = self.nrow
+        uoff = self.ochannel
+        voff = self.orow
+        dgamma = self.dgamma
+        dv = self.drow
+        D = self.SDD
+        R = np.linalg.norm(self.vsource)
+
+        gamma_array = np.deg2rad((np.arange(nu) - uoff) * dgamma)
+        v_array = (np.arange(nv) - voff) * dv
+
+        projection = np.dot(self.vsource, valpha)
+        closest_vec = self.vsource[:, None] - projection[None, :] * valpha
+        actual_distance = np.linalg.norm(closest_vec, axis=0).reshape(nv, nu)
+
+        expected_distance = np.zeros((nv, nu))
+
+        for j, v in enumerate(v_array):
+            for i, gamma in enumerate(gamma_array):
+                expected_distance[j, i] = R * np.sqrt(
+                    np.sin(gamma) ** 2
+                    + (v ** 2 / (D ** 2 + v ** 2)) * np.cos(gamma) ** 2
+                )
+
+        np.testing.assert_allclose(
+            actual_distance,
+            expected_distance,
+            rtol=rtol,
+            atol=atol
+        )
+
+        return True
 
     
 '''============================================================================
