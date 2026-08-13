@@ -8,7 +8,7 @@ from XSSModules import enum_list as enm
 from XSSModules.cross_section import XcomCrossSection as cs
 
 # Jiaying's path
-os.environ['XSSLibraries'] = 'C:/Users/jzhan685/CT/Codes/XSS/XSSLibraries/'
+os.environ['XSSLibraries'] = '/Users/zhangjiaying/CT/Codes/XSS/XSS_JZ/XSSLibraries/'
 
 # Adding Libraray and Phantom Database
 path_XSSLibraries = os.environ['XSSLibraries']
@@ -351,7 +351,6 @@ class StaticLACPhantom():
             # print('Processed obj #', kobj, 'with', np.shape(obj.clip_matrix)[0], 'clipping planes')
         
         return vol
-    
 
     '''------------------------------------------------------------------------
     [F] - generate_line_integral_single_projection
@@ -397,7 +396,6 @@ class StaticLACPhantom():
         nuv = nv*nu
         vts = np.empty((0,nuv))
         vte = np.empty((0,nuv))
-        
     
         for kprec in np.arange(nprec):
             obj = self.object_list[kprec] # obj is QuadraticShape3D
@@ -415,7 +413,6 @@ class StaticLACPhantom():
                 # Knot weights
                 vknot = np.hstack( (vknot, np.power(2,nknot)) )
                 nknot = nknot + 1
-                
              
             # ---- Case II: Nonconvex Object    
             else: # ['paraboloid','hyperboloid1','hyperboloid2', 'torus']
@@ -433,8 +430,7 @@ class StaticLACPhantom():
                 # Knot weights
                 vknot = np.hstack( ( vknot, np.power(2,nknot), np.power(2,nknot+1) ) )
                 nknot = nknot + 2
-                
-        
+
         # Sort the intersections t: vt - [2knot,nuv]        
         vt = np.vstack( (vts,vte) )
         sort_order = np.argsort(vt, axis = 0)
@@ -472,10 +468,19 @@ class StaticLACPhantom():
         nprec = self.num_obj_precedence
         nttl = self.num_obj_total
         nv = CBGeoFPD.nrow
+        ov = CBGeoFPD.orow
+        dv = CBGeoFPD.drow
         nu = CBGeoFPD.nchannel
+        ou = CBGeoFPD.ochannel
+        du = CBGeoFPD.dchannel
         nuv = nv*nu
         SPD = CBGeoFPD.SPD
-            
+
+        u = (np.arange(nu) - ou) * du
+        v = (np.arange(nv) - ov) * dv
+        gmax = np.sqrt(SPD**2 + u[:, None]**2 + v[None, :]**2)
+        gmax = gmax.reshape(-1)
+
         # Initialize an empty 2D array
         vts = np.empty((0,nuv))
         vte = np.empty((0,nuv))      
@@ -488,15 +493,10 @@ class StaticLACPhantom():
                 # Line intersections
                 T = self.calculate_line_segment_single_object_convex(obj,CBGeoFPD)
                 T0 = T.copy()
-                T0[T0 >= SPD] = TMAX
+                T0 = np.minimum(T0, gmax[None, :])
                 T = T0.reshape(T.shape)
                 vts = T[0,:].reshape([1,nuv])
                 vte = T[1,:].reshape([1,nuv])
-                '''
-                mask = (vts < TMAX) & (vte >= TMAX)
-                if np.any(mask):
-                    raise ValueError('The detector is too close to the source.')
-                '''
                 gk = (vte - vts) * obj.LAC
 
             # ---- Case II: Nonconvex Object    
@@ -506,17 +506,12 @@ class StaticLACPhantom():
                 T = self.calculate_line_segment_single_object_nonconvex(obj,CBGeoFPD)
                 # Line segmentation should be less than the distance from source to detector
                 T0 = T.copy()
-                T0[T0 >= SPD] = TMAX
+                T0 = np.minimum(T0, gmax[None, :])
                 T = T0.reshape(T.shape)
                 vts1 = T[0,:].reshape([1,nuv])
                 vte1 = T[1,:].reshape([1,nuv])
                 vts2 = T[2,:].reshape([1,nuv])
                 vte2 = T[3,:].reshape([1,nuv])
-                '''
-                mask = (vts1 < TMAX) & (vte1 >= TMAX) | (vts2 < TMAX) & (vte2 >= TMAX)
-                if np.any(mask):
-                    raise ValueError('The detector is too close to the source.')
-                '''
                 gk = (vte2 + vte1 - vts2 - vts1) * obj.LAC
             
             # ---- Update the projection data
