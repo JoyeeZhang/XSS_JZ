@@ -412,7 +412,7 @@ class CTCBFPDHelicalLAC():
       ax = fig.add_subplot()
       for k in range(nview):
         CBGeo = self.generate_CBFPD_geometry_single_view(k)
-        gk = phantom.generate_line_integral_single_projection_FPD(CBGeo)
+        gk = phantom.generate_line_integral_single_projection(CBGeo)
         fio.append_slices(fnProjection,gk,projection_data_type_numpy)
 
         if np.mod(k,10) == 0:
@@ -491,7 +491,7 @@ class CTCBFPDHelicalLAC():
         CBGeo.nchannel = nups_channel*CBGeo.nchannel
         CBGeo.dchannel = CBGeo.dchannel/nups_channel
         CBGeo.ochannel = nups_channel*ochannel + 0.5*(nups_channel-1)
-        gk = phantom.generate_line_integral_single_projection_FPD(CBGeo)        
+        gk = phantom.generate_line_integral_single_projection(CBGeo)
         # Downsampling (averaging)
         gk = gk.reshape(nrow,nups_row,nchannel,nups_channel).mean(axis=(1,3)) # has to reassign it back to gk, otherwise, gk does not change
         # Save data
@@ -511,56 +511,6 @@ class CTCBFPDHelicalLAC():
       fn_scan_protocol_source = self.fn_scan_protocol
       fld_scan_protocol_target = self.raw_data_folder
       shutil.copy(fn_scan_protocol_source, fld_scan_protocol_target)
-
-    '''------------------------------------------------------------------------
-    [F] - generate_CBFPD_sinogram()
-    [I] - save_path: path to save the sinogram
-        - save_name: name of the sinogram
-        - nups_channel, nups_row: Average of upsampled rays
-          -- Both shall be odd numbers, default is 1
-          -- nunew = nups_channel*nu
-          -- dunew = du/nunew
-          -- uoffnew = nups_channel*nu + (nu-1)/2
-    [N] - Generate cone beam sinogram and store data
-    [H] - created by JZhang prior to 20260404 
-    ------------------------------------------------------------------------'''
-    def generate_CBFPD_sinogram(self, save_path, save_name, nups_channel=1, nups_row=1):
-        # Generate phantom
-        phantom_name = self.phantom_name
-        phantom = ap.StaticLACPhantom(phantom_name)
-
-        # Generate projection data
-        nview = self.views_per_rotation
-        orow = self.detector_row_offset
-        nchannel = self.detector_channel_number
-        ochannel = self.detector_channel_offset
-        sinogram = np.zeros([nchannel, nview])
-        for k in range(nview):
-            CBGeo = self.generate_CBFPD_geometry_single_view(k)
-            # Upsampling
-            nrow = CBGeo.nrow
-            nchannel = CBGeo.nchannel
-            CBGeo.nrow = nups_row * CBGeo.nrow
-            CBGeo.drow = CBGeo.drow / nups_row
-            CBGeo.orow = nups_row * orow + 0.5 * (nups_row - 1)
-            CBGeo.nchannel = nups_channel * CBGeo.nchannel
-            CBGeo.dchannel = CBGeo.dchannel / nups_channel
-            CBGeo.ochannel = nups_channel * ochannel + 0.5 * (nups_channel - 1)
-            gk = phantom.generate_line_integral_single_projection(CBGeo)
-            # Downsampling (averaging)
-            gk = gk.reshape(nrow, nups_row, nchannel, nups_channel).mean(axis=(1, 3))
-            sinogram[:, k] = gk[int(orow)]
-            if np.mod(k, 10) == 0:
-                print(f'Completed projection {k} of {nview}')
-
-        print(f'Sinogram 2D shape: {sinogram.shape}')
-        plt.imshow(sinogram, cmap='gray')
-        plt.title("Sinogram")
-        plt.show()
-
-        os.makedirs(save_path, exist_ok=True)
-        file_name = f"{save_name}_sinogram_{nview}view_{nchannel}channel.npy"
-        np.save(os.path.join(save_path, file_name), sinogram)
 
 
 '''============================================================================
@@ -1100,58 +1050,6 @@ class CTCBCurveDHelicalLAC():
         fld_scan_protocol_target = self.raw_data_folder
         shutil.copy(fn_scan_protocol_source, fld_scan_protocol_target)
 
-    '''------------------------------------------------------------------------
-    [F] - generate_CBCurveD_sinogram()
-    [I] - save_path: path to save the sinogram
-        - save_name: name of the sinogram
-        - nups_channel, nups_row: Average of upsampled rays
-          -- Both shall be odd numbers, default is 1
-          -- nunew = nups_channel*nu
-          -- dunew = du/nunew
-          -- uoffnew = nups_channel*nu + (nu-1)/2
-    [N] - Generate cone beam sinogram and store data
-    [H] - created by JZhang prior to 20260404 
-    ------------------------------------------------------------------------'''
-
-    def generate_CBCurveD_sinogram(self, save_path, save_name, nups_channel=1, nups_row=1):
-        # Generate phantom
-        phantom_name = self.phantom_name
-        phantom = ap.StaticLACPhantom(phantom_name)
-
-        # Generate projection data
-        nview = self.views_per_rotation
-        orow = self.detector_row_offset
-        ochannel = self.detector_channel_offset
-        nchannel = self.detector_channel_number
-        sinogram = np.zeros([nchannel, nview])
-        for k in range(nview):
-            CBGeo = self.generate_CBCurveD_geometry_single_view(k)
-            # Upsampling
-            nrow = CBGeo.nrow
-            nchannel = CBGeo.nchannel
-            CBGeo.nrow = nups_row * CBGeo.nrow
-            CBGeo.drow = CBGeo.drow / nups_row
-            CBGeo.orow = nups_row * orow + 0.5 * (nups_row - 1)
-            CBGeo.nchannel = nups_channel * CBGeo.nchannel
-            CBGeo.dchannel = CBGeo.dchannel / nups_channel
-            CBGeo.ochannel = nups_channel * ochannel + 0.5 * (nups_channel - 1)
-            CBGeo.dgamma = CBGeo.dgamma / nups_channel
-            gk = phantom.generate_line_integral_single_projection(CBGeo)
-            # Downsampling (averaging)
-            gk = gk.reshape(nrow, nups_row, nchannel, nups_channel).mean(axis=(1, 3))
-            sinogram[:, k] = gk[int(orow)]
-            if np.mod(k, 10) == 0:
-                print(f'Completed projection {k} of {nview}')
-
-        print(f'Sinogram 2D shape: {sinogram.shape}')
-        plt.imshow(sinogram, cmap='gray')
-        plt.title("Sinogram")
-        plt.show()
-
-        os.makedirs(save_path, exist_ok=True)
-        file_name = f"{save_name}_sinogram_{nview}view_{nchannel}gamma.npy"
-        np.save(os.path.join(save_path, file_name), sinogram)
-
 
 '''============================================================================
 Class       
@@ -1312,6 +1210,7 @@ class CTCBFPDRolicalLAC():
         self.ve_rotate_plane = np.vstack((ea, eb, ec))
 
         self.ve_rotation_axis = eb
+
 
     '''------------------------------------------------------------------------
     [F] - generate_CBFPD_geometry_angle_zero()
@@ -1732,57 +1631,6 @@ class CTCBFPDRolicalLAC():
         fn_scan_protocol_source = self.fn_scan_protocol
         fld_scan_protocol_target = self.raw_data_folder
         shutil.copy(fn_scan_protocol_source, fld_scan_protocol_target)
-
-    '''------------------------------------------------------------------------
-    [F] - generate_CBCurveD_sinogram()
-    [I] - save_path: path to save the sinogram
-        - save_name: name of the sinogram
-        - nups_channel, nups_row: Average of upsampled rays
-          -- Both shall be odd numbers, default is 1
-          -- nunew = nups_channel*nu
-          -- dunew = du/nunew
-          -- uoffnew = nups_channel*nu + (nu-1)/2
-    [N] - Generate cone beam sinogram and store data
-    [H] - created by JZhang prior to 20260404 
-    ------------------------------------------------------------------------'''
-
-    def generate_CBFPD_sinogram(self, save_path, save_name, nups_channel, nups_row):
-        # Generate phantom
-        phantom_name = self.phantom_name
-        phantom = ap.StaticLACPhantom(phantom_name)
-
-        # Generate projection data
-        nview = self.views_per_rotation
-        orow = self.detector_row_offset
-        nchannel = self.detector_channel_number
-        ochannel = self.detector_channel_offset
-        sinogram = np.zeros([nchannel, nview])
-        for k in range(nview):
-            CBGeo = self.generate_CBFPD_geometry_single_view(k)
-            # Upsampling
-            nrow = CBGeo.nrow
-            nchannel = CBGeo.nchannel
-            CBGeo.nrow = nups_row * CBGeo.nrow
-            CBGeo.drow = CBGeo.drow / nups_row
-            CBGeo.orow = nups_row * orow + 0.5 * (nups_row - 1)
-            CBGeo.nchannel = nups_channel * CBGeo.nchannel
-            CBGeo.dchannel = CBGeo.dchannel / nups_channel
-            CBGeo.ochannel = nups_channel * ochannel + 0.5 * (nups_channel - 1)
-            gk = phantom.generate_line_integral_single_projection(CBGeo)
-            # Downsampling (averaging)
-            gk = gk.reshape(nrow, nups_row, nchannel, nups_channel).mean(axis=(1, 3))
-            sinogram[:, k] = gk[int(orow)]
-            if np.mod(k, 10) == 0:
-                print(f'Completed projection {k} of {nview}')
-
-        print(f'Sinogram 2D shape: {sinogram.shape}')
-        plt.imshow(sinogram, cmap='gray')
-        plt.title("Sinogram")
-        plt.show()
-
-        os.makedirs(save_path, exist_ok=True)
-        file_name = f"{save_name}_sinogram_{nview}view_{nchannel}gamma.npy"
-        np.save(os.path.join(save_path, file_name), sinogram)
 
 
 '''============================================================================
@@ -2392,55 +2240,3 @@ class CTCBCurveDRolicalLAC():
         fn_scan_protocol_source = self.fn_scan_protocol
         fld_scan_protocol_target = self.raw_data_folder
         shutil.copy(fn_scan_protocol_source, fld_scan_protocol_target)
-
-    '''------------------------------------------------------------------------
-    [F] - generate_CBCurveD_sinogram()
-    [I] - save_path: path to save the sinogram
-        - save_name: name of the sinogram
-        - nups_channel, nups_row: Average of upsampled rays
-          -- Both shall be odd numbers, default is 1
-          -- nunew = nups_channel*nu
-          -- dunew = du/nunew
-          -- uoffnew = nups_channel*nu + (nu-1)/2
-    [N] - Generate cone beam sinogram and store data
-    [H] - created by JZhang prior to 20260404 
-    ------------------------------------------------------------------------'''
-
-    def generate_CBCurveD_sinogram(self, save_path, save_name, nups_channel, nups_row):
-        # Generate phantom
-        phantom_name = self.phantom_name
-        phantom = ap.StaticLACPhantom(phantom_name)
-
-        # Generate projection data
-        nview = self.views_per_rotation
-        orow = self.detector_row_offset
-        nchannel = self.detector_channel_number
-        ochannel = self.detector_channel_offset
-        sinogram = np.zeros([nchannel, nview])
-        for k in range(nview):
-            CBGeo = self.generate_CBCurveD_geometry_single_view(k)
-            # Upsampling
-            nrow = CBGeo.nrow
-            nchannel = CBGeo.nchannel
-            CBGeo.nrow = nups_row * CBGeo.nrow
-            CBGeo.drow = CBGeo.drow / nups_row
-            CBGeo.orow = nups_row * orow + 0.5 * (nups_row - 1)
-            CBGeo.nchannel = nups_channel * CBGeo.nchannel
-            CBGeo.dchannel = CBGeo.dchannel / nups_channel
-            CBGeo.ochannel = nups_channel * ochannel + 0.5 * (nups_channel - 1)
-            CBGeo.dgamma = CBGeo.dgamma / nups_channel
-            gk = phantom.generate_line_integral_single_projection(CBGeo)
-            # Downsampling (averaging)
-            gk = gk.reshape(nrow, nups_row, nchannel, nups_channel).mean(axis=(1, 3))
-            sinogram[:, k] = gk[int(orow)]
-            if np.mod(k, 10) == 0:
-                print(f'Completed projection {k} of {nview}')
-
-        print(f'Sinogram 2D shape: {sinogram.shape}')
-        plt.imshow(sinogram, cmap='gray')
-        plt.title("Sinogram")
-        plt.show()
-
-        os.makedirs(save_path, exist_ok=True)
-        file_name = f"{save_name}_sinogram_{nview}view_{nchannel}channel.npy"
-        np.save(os.path.join(save_path, file_name), sinogram)

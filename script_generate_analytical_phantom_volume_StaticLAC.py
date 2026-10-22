@@ -10,8 +10,8 @@ from XSSModules import support as spt
 # phantom_name = "Pelvis_static_LAC"
 # phantom_name = "Breast_static_LAC"
 # phantom_name = "Prostate_static_LAC"
-# phantom_name = "FORBILD_head_static_LAC"
-phantom_name = "Tire3D_H44-5X16-5R21_LAC"
+phantom_name = "FORBILD_head_static_LAC"
+# phantom_name = "Tire3D_H44-5X16-5R21_LAC"
 # phantom_name = "Tire2D_H44-5X16-5R21"
 
 # Load phantom definition
@@ -20,14 +20,14 @@ phantom = ap.StaticLACPhantom(phantom_name)
 # generate 3D digital image
 save_option = True # True or False
 volume_option = 'Full' # 'Partial' or 'Full'
-scale= 0.2
+scale= 1
 xFOV = 256.0/scale
 zFOV = 256.0/scale
 
 # Volume for entire tire
 if volume_option == 'Full':
-    ncol = 1024
-    nrow = 1024
+    ncol = 256
+    nrow = 256
     nslice = 1
     dcol = xFOV / ncol
     drow = xFOV / nrow
@@ -35,7 +35,7 @@ if volume_option == 'Full':
     ocol = (ncol - 1) / 2
     orow = (nrow - 1) / 2
     oslice = (nslice - 1) / 2
-    vol = img.Volume3D(ncol, nrow, nslice, dcol, drow, dslice, ocol, orow, oslice)
+    vol = img.Volume3D(ncol, nrow, nslice, dcol, drow, dslice, ocol, orow, oslice, data_type_numpy=np.float32)
     vol = phantom.generate_volume_image(vol)
     # show
     spt.multi_section_viewer(vol.volume, ivmin=0.02, ivmax=0.03, isection='slice')
@@ -56,7 +56,7 @@ elif volume_option == 'Partial':
     orow = (nrow - 1) / 2
     oslice = (nslice - 1) / 2
     scaled = 1.0 / 3.0
-    vol = img.Volume3D(ncol, nrow, nslice, dcol, drow, dslice, ocol, orow, oslice)
+    vol = img.Volume3D(ncol, nrow, nslice, dcol, drow, dslice, ocol, orow, oslice, data_type_numpy=np.float32)
     vol = phantom.generate_volume_image(vol)
     pvol_ncol = int(ncol * scaled)
     pvol_nrow = int(nrow)
